@@ -99,7 +99,7 @@ function Path:getClosestPoint(pt)
         if d < minDist then
             closest = pointInSeg
             minDist = d
-            if i > 3 then
+            if i > 2 then
                 distanceInCurve = self.distances[i - 2] + self.points[i - 1]:distanceToPoint(closest)
             else
                 distanceInCurve = self.points[i - 1]:distanceToPoint(closest)
