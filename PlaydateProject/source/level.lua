@@ -13,15 +13,21 @@ class('Level').extends(Screen)
 function Level:init(baseName)
     Level.super.init(self)
 
-    self.tilesheet = gfx.imagetable.new("tilemaps/" .. baseName)
+    self.baseName = baseName
+end
 
-    self:read_tilemap("tilemaps/" .. baseName .. "_tilemap.bin")
+function Level:start()
+    Level.super.start(self)
 
-    self:read_paths("paths/" .. baseName .. "_paths.bin")
+    self.tilesheet = gfx.imagetable.new("tilemaps/" .. self.baseName)
 
-    self:read_enemies("levels/" .. baseName .. ".bin")
+    self:read_tilemap("tilemaps/" .. self.baseName .. "_tilemap.bin")
 
-    self.player = Player(self.paths["Master"])
+    self:read_paths("paths/" .. self.baseName .. "_paths.bin")
+
+    self:read_enemies("levels/" .. self.baseName .. ".bin")
+
+    self.player = Player(self.paths["Master"], self)
     self.player:add()
 end
 
@@ -49,8 +55,8 @@ function Level:read_tilemap(filename)
     self.offsetY = -offsetY + 240 / 2
 
     self.map = gfx.tilemap.new()
-    self.map:setImageTable(self.tilesheet)   
-    self.map:setSize(sizeX, sizeY)    
+    self.map:setImageTable(self.tilesheet)
+    self.map:setSize(sizeX, sizeY)
 
     local tileIndices = {}
     for i = 1, sizeX * sizeY do
@@ -104,7 +110,7 @@ function Level:read_enemies(filename)
         data = file:read(4)
         local moveSpeed = string.unpack("f", data)
 
-        local enemy = Enemy(enemyName, self.paths[pathName], moveSpeed)
+        local enemy = Enemy(enemyName, self.paths[pathName], moveSpeed, self)
         enemy:add()
 
         table.insert(self.enemies, enemy)
@@ -129,11 +135,13 @@ function Level:debugCamera()
     end
 end
 
+local allSprites
+
 function Level:update()
     Level.super.update(self)
 
     --self:debugCamera()
-    self.camera_center = self.player.pos
+    self.camera_center = self.player.pos:copy()
 
     -- Check if the camera is outside of the visible area (extents of the tilemap)
     local minX = self.offsetX
@@ -151,13 +159,23 @@ function Level:update()
     elseif (self.camera_center.y > maxY) then
         self.camera_center.y = maxY
     end
+
+    local camera_stutter = 1
+    if camera_stutter > 5 then
+        self.camera_center.x = math.floor(self.camera_center.x / camera_stutter) * camera_stutter
+        self.camera_center.y = math.floor(self.camera_center.y / camera_stutter) * camera_stutter
+    end
 end
 
 function Level:render()
 
     self.map:draw(self.offsetX - 400 / 2, self.offsetY - 240 / 2)
 
+    gfx.setLineWidth(5)
+    gfx.setDitherPattern(0.9, gfx.image.kDitherTypeBayer8x8)
     for path_name, path in pairs(self.paths) do
         path:render()
     end
+    gfx.setLineWidth(1)
+    gfx.setColor(gfx.kColorBlack)
 end

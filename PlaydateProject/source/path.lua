@@ -84,3 +84,28 @@ function Path:computePositionAlongPath(distance)
 
     return self.points[len]:copy()
 end
+
+function Path:getClosestPoint(pt)
+    local len = #self.points
+    local closest = nil
+    local minDist = math.huge
+    local distanceInCurve = 0
+    for i=2, len do
+        local p1 = self.points[i - 1]
+        local p2 = self.points[i]
+        local seg = p1 .. p2
+        local pointInSeg = seg:closestPointOnLineToPoint(pt)
+        local d = pointInSeg:distanceToPoint(pt)
+        if d < minDist then
+            closest = pointInSeg
+            minDist = d
+            if i > 3 then
+                distanceInCurve = self.distances[i - 2] + self.points[i - 1]:distanceToPoint(closest)
+            else
+                distanceInCurve = self.points[i - 1]:distanceToPoint(closest)
+            end
+        end
+    end
+
+    return closest, distanceInCurve
+end

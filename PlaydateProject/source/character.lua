@@ -7,7 +7,7 @@ local vec2 <const> = playdate.geometry.vector2D
 
 class('Character').extends(gfx.sprite)
 
-function Character:init(x, y, characterSheet, path)
+function Character:init(x, y, characterSheet, path, levelScreen)
     Character.super.init(self)
     
     self.characterSheet = characterSheet
@@ -20,6 +20,7 @@ function Character:init(x, y, characterSheet, path)
     self.prevPos = pt2.new(x,y)
     self.lastMove = vec2.new(0,0)
     self.moveSpeed = 20
+    self.levelScreen = levelScreen
 
     self:moveTo(x,y)
     self:setFrame(1)
@@ -77,4 +78,7 @@ function Character:update()
     end
 
     Character.super.update(self)
+end
+
+function Character:afterRender()
 end

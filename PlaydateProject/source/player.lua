@@ -8,10 +8,12 @@ local vec2 <const> = playdate.geometry.vector2D
 
 class('Player').extends(Character)
 
-function Player:init(path)
+function Player:init(path, levelScreen)
     local nyx_table = gfx.imagetable.new("sprites/nyx")
 
-    Player.super.init(self, 10, 0, nyx_table, path)
+    Player.super.init(self, 10, 0, nyx_table, path, levelScreen)
+    
+    self.moveSpeed = 40
 end
 
 function Player:update()
