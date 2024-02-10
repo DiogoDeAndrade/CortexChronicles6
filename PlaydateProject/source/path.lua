@@ -11,11 +11,20 @@ class('Path').extends()
 function Path:init(file)
     self.name = ""
     self.points = {}
+    self.distances = {}
     self.isLoop = false
     if file ~= nil then
         self:loadFromFile(file)
 
-        self.totalLength = self:computeLength()
+        local len = #self.points
+        local length = 0
+
+        for i = 2, len do
+            length += self.points[i - 1]:distanceToPoint(self.points[i])
+            table.insert(self.distances,  length)
+        end
+        
+        self.totalLength = self.distances[#self.distances]
     end
 end
 
@@ -54,30 +63,22 @@ function Path:getPoint(index)
     return self.points[index]
 end
 
-function Path:computeLength()
-    local len = #self.points
-    local length = 0
-
-    for i = 2, len do
-        length += self.points[i - 1]:distanceToPoint(self.points[i])
-    end
-
-    return length
-end
-
 function Path:computePositionAlongPath(distance)
     local current = 2
     local len = #self.points
 
     while (current <= len) do
-        local distToNext = self.points[current - 1]:distanceToPoint(self.points[current])
-        if (distToNext < distance) then
+        local accumDist = self.distances[current - 1]
+        if (accumDist < distance) then
             current += 1
-            distance -= distToNext
         else
+            local partialDistance = distance
+            if (current > 2) then
+                partialDistance -= self.distances[current - 2]
+            end            
             local delta = (self.points[current] - self.points[current - 1]):normalized()
             
-            return self.points[current - 1] + delta * distance
+            return self.points[current - 1] + delta * partialDistance
         end
     end
 
