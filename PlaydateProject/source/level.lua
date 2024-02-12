@@ -17,8 +17,6 @@ function Level:init(baseName)
 end
 
 function Level:start()
-    Level.super.start(self)
-
     self.tilesheet = gfx.imagetable.new("tilemaps/" .. self.baseName)
 
     self:read_tilemap("tilemaps/" .. self.baseName .. "_tilemap.bin")
@@ -28,7 +26,9 @@ function Level:start()
     self:read_enemies("levels/" .. self.baseName .. ".bin")
 
     self.player = Player(self.paths["Master"], self)
-    self.player:add()
+    self:addObject(self.player)
+
+    Level.super.start(self)
 end
 
 function Level:read_tilemap(filename)
@@ -111,7 +111,7 @@ function Level:read_enemies(filename)
         local moveSpeed = string.unpack("f", data)
 
         local enemy = Enemy(enemyName, self.paths[pathName], moveSpeed, self)
-        enemy:add()
+        self:addObject(enemy)
 
         table.insert(self.enemies, enemy)
     end

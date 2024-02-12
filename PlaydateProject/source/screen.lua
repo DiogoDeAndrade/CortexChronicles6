@@ -16,7 +16,22 @@ function Screen:init()
 	self.backgroundSprite:setZIndex(-32768)
 	self.backgroundSprite:setCenter(0, 0)
     self.backgroundSprite:setIgnoresDrawOffset(true)
-	self.backgroundSprite:add()
+
+    self.visible = false
+
+    self.sprites = {}
+end
+
+function Screen:addObject(sprite)
+    table.insert(self.sprites, sprite)
+end
+
+function Screen:removeAllObjects()
+    for _, spr in ipairs(self.sprites) do
+        spr:remove()
+    end
+
+    self.sprites = {}
 end
 
 function Screen:start(param)
@@ -24,6 +39,24 @@ function Screen:start(param)
 end
 
 function Screen:close()
+end
+
+function Screen:setVisible(visible)
+    if self.visible == visible then
+        return
+    end
+    if visible then
+        self.backgroundSprite:add()
+        for _, spr in ipairs(self.sprites) do
+            spr:add()
+        end
+    else
+        self.backgroundSprite:remove()
+        for _, spr in ipairs(self.sprites) do
+            spr:remove()
+        end
+    end
+    self.visible = visible
 end
 
 function Screen:update()
@@ -42,22 +75,11 @@ end
 
 -----------------------------------------------------------
 -- SINGLETON STUFF
-
-class('ScreenState').extends()
-
-function ScreenState:init(screen)
-    self.sprites = gfx.sprite.getAllSprites()
-    
-    gfx.sprite.removeAll()
-
-    self.prevScreen = screen
-end
-
-ScreenState.stack = { }
-Screen.isTrasitioning = false
+Screen.stack = { }
+Screen.isTransitioning = false
 
 function Screen.run()
-    Screen.isTrasitioning = false
+    Screen.isTransitioning = false
 
     Screen.currentScreen:update()
 
@@ -92,8 +114,8 @@ end
 
 function Screen.gotoScreen(name, param)
     if Screen.currentScreen ~= nil then
+        Screen.currentScreen:setVisible(false)
         Screen.currentScreen:close()
-        gfx.sprite.removeAll()
     end
 
     Screen.stack = {}
@@ -101,36 +123,40 @@ function Screen.gotoScreen(name, param)
     Screen.currentScreen = Screen.screens[name]
 
     Screen.currentScreen:start(param)
+    Screen.currentScreen:setVisible(true)
 end
 
 function Screen.pushScreen(name, param)
-    if not Screen.isTrasitioning then
-        Screen.isTrasitioning = true
+    if not Screen.isTransitioning then
+        Screen.isTransitioning = true
 
-        ss = ScreenState(Screen.currentScreen)
+        if Screen.currentScreen ~= nil then
+            Screen.currentScreen:setVisible(false)
+        end
 
-        table.insert(ScreenState.stack, ss)
+        table.insert(Screen.stack, Screen.currentScreen)
 
         Screen.currentScreen = Screen.screens[name]
 
         Screen.currentScreen:start(param)
+        Screen.currentScreen:setVisible(true)
     end
 end
 
 function Screen.popScreen()
-    if not Screen.isTrasitioning then
-        Screen.isTrasitioning = true
+    if not Screen.isTransitioning then
+        Screen.isTransitioning = true
 
         if Screen.currentScreen ~= nil then
+
+            Screen.currentScreen:setVisible(false)
             Screen.currentScreen:close()
         end
 
-        ss = ScreenState.stack[#ScreenState.stack]
-        table.remove(ScreenState.stack)
+        ss = Screen.stack[#Screen.stack]
+        table.remove(Screen.stack)
 
-        Screen.currentScreen = ss.prevScreen
-        for i=1,#ss.sprites do
-            ss.sprites[i]:add()
-        end
+        Screen.currentScreen = ss
+        Screen.currentScreen:setVisible(true)
     end 
 end
