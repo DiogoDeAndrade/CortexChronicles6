@@ -39,42 +39,44 @@ function Character:setFrame(index)
 end
 
 function Character:update()
-    local currentTime = pd.getCurrentTimeMilliseconds()
-    if currentTime - self.lastUpdateTime >= 100 then -- Check if 100 ms have passed
-        self.animFrame = (self.animFrame + 1) % 3
-        self.lastUpdateTime = currentTime -- Reset the last update time
-    end
+    if self.levelScreen.state == Level.STATE_NORMAL then
+        local currentTime = pd.getCurrentTimeMilliseconds()
+        if currentTime - self.lastUpdateTime >= 100 then -- Check if 100 ms have passed
+            self.animFrame = (self.animFrame + 1) % 3
+            self.lastUpdateTime = currentTime -- Reset the last update time
+        end
 
-    self:setFrame(self.dir * 3 + self.animFrame + 1)
+        self:setFrame(self.dir * 3 + self.animFrame + 1)
 
-    if (self.path ~= nil) then
-        self.pos = self.path:computePositionAlongPath(self.distance)
-        self:moveTo(self.pos)
-    end
+        if (self.path ~= nil) then
+            self.pos = self.path:computePositionAlongPath(self.distance)
+            self:moveTo(self.pos)
+        end
 
-    local lastDeltaPos = self.pos - self.prevPos
-    if lastDeltaPos:magnitudeSquared() > 0 then
-        self.lastMove = lastDeltaPos:copy()
-        self.prevPos = self.pos:copy()
+        local lastDeltaPos = self.pos - self.prevPos
+        if lastDeltaPos:magnitudeSquared() > 0 then
+            self.lastMove = lastDeltaPos:copy()
+            self.prevPos = self.pos:copy()
 
-        -- Change dir
-        if math.abs(self.lastMove.x) > math.abs(self.lastMove.y) then
-            -- Move horizontal
-            if self.lastMove.x > 0 then
-                self.dir = 1
+            -- Change dir
+            if math.abs(self.lastMove.x) > math.abs(self.lastMove.y) then
+                -- Move horizontal
+                if self.lastMove.x > 0 then
+                    self.dir = 1
+                else
+                    self.dir = 3
+                end
             else
-                self.dir = 3
+                -- Move vertical
+                if self.lastMove.y > 0 then
+                    self.dir = 2
+                else
+                    self.dir = 0
+                end
             end
         else
-            -- Move vertical
-            if self.lastMove.y > 0 then
-                self.dir = 2
-            else
-                self.dir = 0
-            end
+            self:setFrame(self.dir * 3 + 1)
         end
-    else
-        self:setFrame(self.dir * 3 + 1)
     end
 
     Character.super.update(self)

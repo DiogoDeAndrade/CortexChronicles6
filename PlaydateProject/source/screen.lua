@@ -2,6 +2,7 @@ import "CoreLibs/graphics"
 import "CoreLibs/object"
 import "CoreLibs/sprites"
 
+local pd <const> = playdate
 local gfx <const> = playdate.graphics
 local pt2 <const> = playdate.geometry.point
 
@@ -36,6 +37,9 @@ end
 
 function Screen:start(param)
     self.camera_center = pt2.new(0,0)
+    self.startTime = pd.getCurrentTimeMilliseconds()
+    self.lastFrameTime = self.startTime
+    self.currentTime = 0
 end
 
 function Screen:close()
@@ -80,6 +84,11 @@ Screen.isTransitioning = false
 
 function Screen.run()
     Screen.isTransitioning = false
+
+    local t = pd.getCurrentTimeMilliseconds()
+    Screen.currentScreen.deltaTime = (t - Screen.currentScreen.lastFrameTime) * 0.001
+    Screen.currentScreen.currentTime += Screen.currentScreen.deltaTime
+    Screen.currentScreen.lastFrameTime = t
 
     Screen.currentScreen:update()
 
