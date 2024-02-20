@@ -43,6 +43,7 @@ function Screen:start(param)
 end
 
 function Screen:close()
+    self:removeAllObjects()
 end
 
 function Screen:setVisible(visible)
@@ -130,6 +131,9 @@ function Screen.gotoScreen(name, param)
     Screen.stack = {}
 
     Screen.currentScreen = Screen.screens[name]
+    if Screen.currentScreen == nil then
+        print("Can't find screen ".. name)
+    end
 
     Screen.currentScreen:start(param)
     Screen.currentScreen:setVisible(true)

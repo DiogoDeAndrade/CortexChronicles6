@@ -6,6 +6,8 @@ public class Enemy : MonoBehaviour
 {
     public OkapiKit.Path  path;
     public float          speed = 4.0f;
+    public float          difficulty = 1.0f;
+    public int            keyId = 0;
 
     void Start()
     {

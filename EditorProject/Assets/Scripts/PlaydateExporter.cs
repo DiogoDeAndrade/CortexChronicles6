@@ -5,6 +5,7 @@ using NaughtyAttributes;
 using UnityEngine.Tilemaps;
 using System.IO;
 using System;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class PlaydateExporter : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class PlaydateExporter : MonoBehaviour
         // Export paths
         ExportPaths();
         // Export enemies
-        ExportEnemies();
+        ExportLevelData();
     }
 
     void ExportTilemap()
@@ -168,20 +169,27 @@ public class PlaydateExporter : MonoBehaviour
         }
     }
 
-    void ExportEnemies()
+    void ExportLevelData()
     {
-        var enemies = FindObjectsOfType<Enemy>();
-
         string targetFilename = GetTargetFilename("levels", ".bin");
 
         using (FileStream fileStream = new FileStream(targetFilename, FileMode.Create))
         using (BinaryWriter writer = new BinaryWriter(fileStream))
         {
+            var enemies = FindObjectsOfType<Enemy>();
             writer.Write((UInt32)enemies.Length);
 
             foreach (var enemy in enemies)
             {
                 ExportEnemy(writer, enemy);
+            }
+
+            var doors = FindObjectsOfType<Door>();
+            writer.Write((UInt32)doors.Length);
+
+            foreach (var door in doors)
+            {
+                ExportDoor(writer, door);
             }
         }
     }
@@ -196,5 +204,20 @@ public class PlaydateExporter : MonoBehaviour
         writer.Write((UInt32)pathName.Length);
         writer.Write(pathName);
         writer.Write(enemy.speed);
+        writer.Write(enemy.difficulty);
+        writer.Write((UInt32)enemy.keyId);
+    }
+
+
+    void ExportDoor(BinaryWriter writer, Door door)
+    {
+        var nextLevel = System.Text.Encoding.ASCII.GetBytes(door.nextLevel);
+        writer.Write(door.transform.position.x);
+        writer.Write(door.transform.position.y);
+        writer.Write(door.radius);
+        writer.Write((UInt32)((door.isFinalExit)?(1):(0)));
+        writer.Write((UInt32)nextLevel.Length);
+        writer.Write(nextLevel);
+        writer.Write((UInt32)door.requiredKey);
     }
 }

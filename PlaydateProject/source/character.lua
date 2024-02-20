@@ -24,6 +24,7 @@ function Character:init(x, y, characterSheet, path, levelScreen)
 
     self:moveTo(x,y)
     self:setFrame(1)
+    self:setZIndex(0)
     self:setCenter(0.5, 1.0)
 
     if (self.path ~= nil) then
@@ -34,11 +35,20 @@ function Character:init(x, y, characterSheet, path, levelScreen)
     end
 end
 
+function Character:getHeadPos()
+    local headPos = self.pos:copy()
+    headPos.y -= 14
+    
+    return headPos
+end
+
 function Character:setFrame(index)
     self:setImage(self.characterSheet:getImage(index))
 end
 
 function Character:update()
+    self:setZIndex(self.pos.y)
+
     if self.levelScreen.state == Level.STATE_NORMAL then
         local currentTime = pd.getCurrentTimeMilliseconds()
         if currentTime - self.lastUpdateTime >= 100 then -- Check if 100 ms have passed

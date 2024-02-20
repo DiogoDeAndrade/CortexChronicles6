@@ -10,9 +10,11 @@ local gfx <const> = pd.graphics
 playerData = PlayerData()
 
 Screen.addScreen("Level01", Level("Level01"))
+Screen.addScreen("Level02", Level("Level02"))
 Screen.addScreen("Fight", Fight())
 Screen.addScreen("GameOver", ImageScreen("gameover", "mainmenu"))
-Screen.gotoScreen("Level01")
+
+Screen.gotoScreen("Level02")
 frame = 1
 
 function playdate.update()

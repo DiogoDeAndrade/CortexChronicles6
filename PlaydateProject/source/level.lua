@@ -5,6 +5,7 @@ import "character"
 import "player"
 import "enemy"
 import "playerdata"
+import "door"
 
 local pd <const> = playdate
 local gfx <const> = pd.graphics
@@ -35,12 +36,23 @@ function Level:start()
 
     self:read_paths("paths/" .. self.baseName .. "_paths.bin")
 
-    self:read_enemies("levels/" .. self.baseName .. ".bin")
+    self:read_level_data("levels/" .. self.baseName .. ".bin")
 
     self.player = Player(self.paths["Master"], self)
     self:addObject(self.player)
 
     Level.super.start(self)
+end
+
+function Level:close()
+    Level.super.close(self)
+
+    if self.player ~= nil then
+        self.player = nil
+    end
+    self.enemies = {}
+    self.doors = {}
+    self.paths = {}
 end
 
 function Level:read_tilemap(filename)
@@ -98,7 +110,7 @@ function Level:read_paths(filename)
     end
 end
 
-function Level:read_enemies(filename)
+function Level:read_level_data(filename)
     local file, err = playdate.file.open(filename, playdate.file.kFileRead)
 
     if not file then
@@ -107,6 +119,7 @@ function Level:read_enemies(filename)
     end
 
     self.enemies = {}
+    self.doors = {}
 
     local data, bytesRead = file:read(4)
     local count = string.unpack("I4", data)
@@ -121,13 +134,45 @@ function Level:read_enemies(filename)
 
         data = file:read(4)
         local moveSpeed = string.unpack("f", data)
+        data = file:read(4)
+        local difficulty = string.unpack("f", data)
 
-        local difficulty = 1.0
+        data = file:read(4)
+        local keyId = string.unpack("I4", data)
 
         local enemy = Enemy(enemyName, self.paths[pathName], moveSpeed, difficulty, self)
+        enemy:setKey(keyId)
         self:addObject(enemy)
 
         table.insert(self.enemies, enemy)
+    end
+
+    data, bytesRead = file:read(4)
+    count = string.unpack("I4", data)
+    for i=1,count do
+        data = file:read(4)
+        local x = string.unpack("f", data)
+
+        data = file:read(4)
+        local y = -string.unpack("f", data)
+
+        data = file:read(4)
+        local radius = string.unpack("f", data)
+
+        data = file:read(4)
+        local isFinalExit = string.unpack("I4", data) == 1
+        
+        data = file:read(4)
+        local len = string.unpack("I4", data)
+        local nextLevel = file:read(len)
+
+        data = file:read(4)
+        local requiredKey = string.unpack("I4", data)
+
+        local door = Door(x, y, radius, isFinalExit, nextLevel, requiredKey)
+        self:addObject(door)
+
+        table.insert(self.doors, door)
     end
 end
 
@@ -156,6 +201,10 @@ function Level:update()
 
     --self:debugCamera()
     self.camera_center = self.player.pos:copy()
+
+    if playdate.buttonJustPressed(playdate.kButtonUp) then
+        Screen.gotoScreen("Level02")
+    end
 
     -- Check if the camera is outside of the visible area (extents of the tilemap)
     local minX = self.offsetX
@@ -217,6 +266,10 @@ function Level:update()
                     if self.activeEnemy.health <= 0 then
                         self.state = Level.STATE_NORMAL
                         self.activeEnemy:kill()
+                        if self.activeEnemy.keyId ~= 0 then
+                            self.player:addKey(self.activeEnemy.keyId)
+                            self.activeEnemy.keyId = 0
+                        end
                     end
                 else
                     self.subState = Level.SUBSTATE_BLOCK
@@ -377,4 +430,19 @@ function Level:setupSequence()
 
     self.attackTime = 0
     self.attackTotalTime = 1 / self.activeEnemy.difficulty
+end
+
+function Level:getClosestDoor(pos)
+    local retDoor = nil
+    local retDist = 10000000
+
+    for i, door in ipairs(self.doors) do
+        local dist = door.pos:distanceToPoint(pos)
+        if dist < retDist then
+            retDoor = door
+            retDist = dist
+        end
+    end
+
+    return retDoor, retDist
 end

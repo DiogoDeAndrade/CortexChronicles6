@@ -35,17 +35,11 @@ function Enemy:init(name, path, moveSpeed, difficulty, levelScreen)
     self.difficulty = difficulty
     self.health = self:getMaxHealth()
 
+    self.keyId = 0
 end
 
 function Enemy:getMaxHealth()
     return self.difficulty * 15
-end
-
-function Enemy:getHeadPos()
-    local headPos = self.pos:copy()
-    headPos.y -= 14
-    
-    return headPos
 end
 
 function Enemy:updateFOVPolygon()
@@ -146,9 +140,19 @@ function Enemy:afterRender()
 
         gfx.setColor(gfx.kColorBlack)
     end
+
+    if self.keyId ~= 0 then
+        local h = self:getHeadPos()
+        h.y -= 10
+        playerData.keycard:drawAnchored(h.x, h.y, 0.5, 1.0)
+    end
 end
 
 function Enemy:kill()
     self.state = DEAD
     self:setFrame(13)
+end
+
+function Enemy:setKey(id)
+    self.keyId = id
 end

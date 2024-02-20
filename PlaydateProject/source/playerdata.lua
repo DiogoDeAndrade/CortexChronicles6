@@ -55,5 +55,9 @@ function PlayerData:init()
         { keyCode = playdate.kButtonLeft, image = gfx.image.new("sprites/button_left.png") },
     }
 
+    self.keycard = gfx.image.new("sprites/keycard.png")
+    self.closedDoor = gfx.image.new("sprites/door.png")
+    self.openDoor = gfx.image.new("sprites/door_open.png")
+
     self.stamina = 100
 end
