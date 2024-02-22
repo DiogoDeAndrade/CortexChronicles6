@@ -58,6 +58,10 @@ function PlayerData:init()
     self.keycard = gfx.image.new("sprites/keycard.png")
     self.closedDoor = gfx.image.new("sprites/door.png")
     self.openDoor = gfx.image.new("sprites/door_open.png")
+    self.turret = gfx.image.new("sprites/turret.png")
+
+    self.button_retry = gfx.image.new("sprites/retry.png")
+    self.button_quit = gfx.image.new("sprites/quit.png")
 
     self.stamina = 100
 end

@@ -74,25 +74,11 @@ function Enemy:update()
 
             self:updateFOVPolygon()
 
-            -- Check if player is inside the fov
-            local player = self.levelScreen.player
-            if player ~= nil then
-                local playerPos = player.pos
-                local headPos = self:getHeadPos()
-
-                -- Check distance
-                local toPlayer = playerPos - headPos
-                local dist = toPlayer:magnitude()
-                if dist > (self.near - 10) and dist < (self.far + 10) then
-                    toPlayer:normalize()
-                    local angle = math.abs(toPlayer:angleBetween(gForward[self.dir + 1]))
-                    if (angle < self.fov) then
-                        -- Override path, now go towards the path of the player
-                        self.state = START_CHASE
-                        self.targetPoint, self.targetDistance = player.path:getClosestPoint(self.pos)
-                        self.path = nil
-                    end
-                end
+            if self:checkPlayerLOS(gForward[self.dir + 1]) then
+                -- Override path, now go towards the path of the player
+                self.state = START_CHASE
+                self.targetPoint, self.targetDistance = player.path:getClosestPoint(self.pos)
+                self.path = nil
             end
         elseif self.state == START_CHASE then
             -- Move towards at chase speed (twice the normal speed)
@@ -130,6 +116,27 @@ function Enemy:update()
             self:setFrame(13)
         end
     end
+end
+
+function Enemy:checkPlayerLOS(forward)
+    -- Check if player is inside the fov
+    local player = self.levelScreen.player
+    if player ~= nil then
+        local playerPos = player.pos
+        local headPos = self:getHeadPos()
+
+        -- Check distance (linear distance along the vector)
+        local toPlayer = playerPos - headPos
+        local dist = forward:dotProduct(toPlayer)
+        if dist > math.max(0, self.near - 10) and dist < self.far then
+            toPlayer:normalize()
+            local angle = math.abs(toPlayer:angleBetween(forward))
+            if (angle < self.fov) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function Enemy:afterRender()

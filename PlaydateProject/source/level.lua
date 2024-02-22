@@ -6,6 +6,7 @@ import "player"
 import "enemy"
 import "playerdata"
 import "door"
+import "turret"
 
 local pd <const> = playdate
 local gfx <const> = pd.graphics
@@ -121,6 +122,7 @@ function Level:read_level_data(filename)
     self.enemies = {}
     self.doors = {}
 
+    -- Load enemies
     local data, bytesRead = file:read(4)
     local count = string.unpack("I4", data)
     for i=1,count do
@@ -147,6 +149,36 @@ function Level:read_level_data(filename)
         table.insert(self.enemies, enemy)
     end
 
+    -- Load turrets
+    local data, bytesRead = file:read(4)
+    local count = string.unpack("I4", data)
+    for i=1,count do
+        data = file:read(4)
+        local len = string.unpack("I4", data)
+        local turretName = file:read(len)
+
+        data = file:read(4)
+        local x = string.unpack("f", data)
+        data = file:read(4)
+        local y = -string.unpack("f", data)
+        data = file:read(4)
+        local rotation = -90 - string.unpack("f", data)
+        data = file:read(4)
+        local scanDuration = string.unpack("f", data)
+        data = file:read(4)
+        local scanPause = string.unpack("f", data)
+        data = file:read(4)
+        local scanAngularRange = string.unpack("f", data)
+        data = file:read(4)
+        local difficulty = string.unpack("f", data)
+
+        local turret = Turret(turretName, x, y, rotation, scanDuration, scanPause, scanAngularRange, difficulty, self)
+        self:addObject(turret)
+
+        table.insert(self.enemies, turret)
+    end
+
+    -- Load doors
     data, bytesRead = file:read(4)
     count = string.unpack("I4", data)
     for i=1,count do
@@ -201,10 +233,6 @@ function Level:update()
 
     --self:debugCamera()
     self.camera_center = self.player.pos:copy()
-
-    if playdate.buttonJustPressed(playdate.kButtonUp) then
-        Screen.gotoScreen("Level02")
-    end
 
     -- Check if the camera is outside of the visible area (extents of the tilemap)
     local minX = self.offsetX

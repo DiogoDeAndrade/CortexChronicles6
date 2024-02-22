@@ -184,6 +184,14 @@ public class PlaydateExporter : MonoBehaviour
                 ExportEnemy(writer, enemy);
             }
 
+            var turrets = FindObjectsOfType<Turret>();
+            writer.Write((UInt32)turrets.Length);
+
+            foreach (var turret in turrets )
+            {
+                ExportTurret(writer, turret);
+            }
+
             var doors = FindObjectsOfType<Door>();
             writer.Write((UInt32)doors.Length);
 
@@ -208,6 +216,19 @@ public class PlaydateExporter : MonoBehaviour
         writer.Write((UInt32)enemy.keyId);
     }
 
+    void ExportTurret(BinaryWriter writer, Turret turret)
+    {
+        var turretName = System.Text.Encoding.ASCII.GetBytes(turret.gameObject.name);
+        writer.Write((UInt32)turretName.Length);
+        writer.Write(turretName);
+        writer.Write(turret.transform.position.x);
+        writer.Write(turret.transform.position.y);
+        writer.Write(turret.transform.rotation.eulerAngles.z);
+        writer.Write(turret.scanDuration);
+        writer.Write(turret.scanPause);
+        writer.Write(turret.scanAngularRange);
+        writer.Write(turret.difficulty);
+    }
 
     void ExportDoor(BinaryWriter writer, Door door)
     {
