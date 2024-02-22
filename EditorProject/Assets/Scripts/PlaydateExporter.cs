@@ -22,7 +22,7 @@ public class PlaydateExporter : MonoBehaviour
         ExportTilemap();
         // Export paths
         ExportPaths();
-        // Export enemies
+        // Export level data (enemies, door, shadow areas)
         ExportLevelData();
     }
 
@@ -136,7 +136,16 @@ public class PlaydateExporter : MonoBehaviour
 
     void ExportPaths()
     {
-        var paths = FindObjectsOfType<OkapiKit.Path>();
+        var pathsArray = FindObjectsOfType<OkapiKit.Path>();
+
+        var paths = new List<OkapiKit.Path>();
+        foreach (var path in pathsArray)
+        {
+            if (path.GetComponent<Shadow>() == null)
+            {
+                paths.Add(path);
+            }
+        }
 
         string targetFilename = GetTargetFilename("paths", "_paths.bin");
 
@@ -144,7 +153,7 @@ public class PlaydateExporter : MonoBehaviour
         using (BinaryWriter writer = new BinaryWriter(fileStream))
         {
             // Write the two 32-bit unsigned integers
-            writer.Write((UInt32)paths.Length);
+            writer.Write((UInt32)paths.Count);
 
             foreach (var path in paths)
             {
@@ -198,6 +207,14 @@ public class PlaydateExporter : MonoBehaviour
             foreach (var door in doors)
             {
                 ExportDoor(writer, door);
+            }
+
+            var shadows = FindObjectsOfType<Shadow>();
+            writer.Write((UInt32)shadows.Length);
+
+            foreach (var shadow in shadows)
+            {
+                ExportPath(writer, shadow.GetComponent<OkapiKit.Path>());
             }
         }
     }

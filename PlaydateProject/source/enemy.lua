@@ -132,7 +132,9 @@ function Enemy:checkPlayerLOS(forward)
             toPlayer:normalize()
             local angle = math.abs(toPlayer:angleBetween(forward))
             if (angle < self.fov) then
-                return true
+                if not self.levelScreen:isPlayerInShadow() then
+                    return true
+                end
             end
         end
     end

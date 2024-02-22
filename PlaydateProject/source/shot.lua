@@ -34,3 +34,17 @@ function Shot:update(deltaTime)
     self.pos += self.velocity * deltaTime * 0.001
     self.timer -= deltaTime
 end
+
+function Shot:hitPlayer()
+    local player = self.levelScreen.player
+    if player ~= nil then
+        local seg = self.oldPos .. self.pos
+
+        local pos = seg:closestPointOnLineToPoint(player.pos)
+        if player.pos:distanceToPoint(pos) < 8 then
+            Screen.gotoScreen("GameOver", Screen.currentScreen.baseName)
+        end
+    end
+
+    return false
+end

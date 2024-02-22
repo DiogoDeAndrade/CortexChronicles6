@@ -7,6 +7,7 @@ import "enemy"
 import "playerdata"
 import "door"
 import "turret"
+import "shadow"
 
 local pd <const> = playdate
 local gfx <const> = pd.graphics
@@ -54,6 +55,7 @@ function Level:close()
     self.enemies = {}
     self.doors = {}
     self.paths = {}
+    self.shadows = {}
 end
 
 function Level:read_tilemap(filename)
@@ -121,6 +123,7 @@ function Level:read_level_data(filename)
 
     self.enemies = {}
     self.doors = {}
+    self.shadows = {}
 
     -- Load enemies
     local data, bytesRead = file:read(4)
@@ -205,6 +208,18 @@ function Level:read_level_data(filename)
         self:addObject(door)
 
         table.insert(self.doors, door)
+    end
+
+    -- Load shadows
+    data, bytesRead = file:read(4)
+    count = string.unpack("I4", data)
+    for i=1,count do
+        local path = Path(file)
+
+        local shadow = Shadow(path)
+        self:addObject(shadow)
+
+        table.insert(self.shadows, shadow)
     end
 end
 
@@ -473,4 +488,14 @@ function Level:getClosestDoor(pos)
     end
 
     return retDoor, retDist
+end
+
+function Level:isPlayerInShadow()
+    for i, shadow in ipairs(self.shadows) do
+        if shadow:inShadow(self.player.pos) then
+            return true
+        end
+    end
+
+    return false
 end
