@@ -1,6 +1,6 @@
 # THE CORTEX CHRONICLES, CHAPTER 6 - THE INFILTRATION OF NYX STERLING
 
-![Title](PlaydateProject/source/sprites/title.png)
+![Title](Screenshots/screen00.png)
 
 Developed for the Game Creator's Club at Lusofona University.
 This month, the theme is [Playdate]
