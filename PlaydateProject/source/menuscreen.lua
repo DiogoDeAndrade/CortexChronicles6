@@ -39,7 +39,7 @@ function MenuScreen:update()
 
     if self.inputEnable then
         if self.defaultScene ~= nil then
-            if playdate.buttonIsPressed(playdate.kButtonB) then
+            if playdate.buttonIsPressed(playdate.kButtonA) or playdate.buttonIsPressed(playdate.kButtonB) then
                 if self.callback ~= nil then
                     self.callback(self.defaultScene)
                 end

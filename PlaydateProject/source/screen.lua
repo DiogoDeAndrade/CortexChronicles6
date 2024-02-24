@@ -151,6 +151,8 @@ function Screen.run()
             end
         end
     end
+
+    --playdate.drawFPS(0, 230)
 end
 
 function Screen.addScreen(name, screen)

@@ -28,7 +28,7 @@ function StoryScreen:update()
     StoryScreen.super.update(self)
 
     if self.inputEnable then
-        if playdate.buttonJustPressed(playdate.kButtonB) then
+        if playdate.buttonJustPressed(playdate.kButtonA) or playdate.buttonJustPressed(playdate.kButtonB) then
             if self.storyText ~= nil and self.storyIndex >= #self.storyText then
                 Screen.gotoScreen(self.nextScene, nil, self.transitionTime)
             else

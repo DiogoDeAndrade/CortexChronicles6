@@ -1,6 +1,8 @@
-name=Template
-author=You
-description=This is template project
-bundleID=com.organization.package
-version=0.0.1
+name=The Infiltration of Nyx Sterling
+author=Diogo de Andrade
+description=Game created for the February Game Creator Club - https://github.com/DiogoDeAndrade/CortexChronicles6 
+bundleID=com.spellstudios.cortex6
+version=1.0.0
 buildNumber=1
+imagePath=launcher/
+contentWarning=This game contains depictions of violence and death.

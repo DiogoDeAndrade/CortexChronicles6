@@ -68,7 +68,7 @@ function Player:update()
                             self.distance = newDistance
                             if newDist < closestDoor.radius and closestDoor.isFinalExit then
                                 -- Exit here!
-                                Screen.gotoScreen(closestDoor.nextLevel)
+                                Screen.gotoScreen(closestDoor.nextLevel, nil, 1)
                             end
                         else
                             -- Check old and new distance to this door

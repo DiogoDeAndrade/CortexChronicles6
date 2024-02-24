@@ -14,6 +14,17 @@ public class Shadow : MonoBehaviour
         if (path)
         {
             var points = path.GetPoints();
+            if (path.isLocalSpace)
+            {
+                for (int i = 0; i < points.Count; i++)
+                {
+                    var pt = points[i];
+
+                    pt = transform.worldToLocalMatrix * new Vector4(pt.x, pt.y, pt.z, 1);
+
+                    points[i] = pt;
+                }
+            }
             var mesh = CreateMeshFromPolygon(points);
 
             var meshFilter = GetComponent<MeshFilter>();
