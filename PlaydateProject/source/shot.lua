@@ -9,7 +9,7 @@ local vec2 <const> = playdate.geometry.vector2D
 
 class('Shot').extends()
 
-function Shot:init(pos, velocity, duration, radius)
+function Shot:init(pos, velocity, duration, radius, levelScreen)
 
     Shot.super.init(self)
 
@@ -18,6 +18,7 @@ function Shot:init(pos, velocity, duration, radius)
     self.velocity = velocity
     self.timer = duration
     self.radius = radius
+    self.levelScreen = levelScreen
 end
 
 function Shot:render()
@@ -38,11 +39,15 @@ end
 function Shot:hitPlayer()
     local player = self.levelScreen.player
     if player ~= nil then
+        if player:isDead() then
+            return false
+        end
+        
         local seg = self.oldPos .. self.pos
 
         local pos = seg:closestPointOnLineToPoint(player.pos)
         if player.pos:distanceToPoint(pos) < 8 then
-            Screen.gotoScreen("GameOver", Screen.currentScreen.baseName)
+            return true
         end
     end
 

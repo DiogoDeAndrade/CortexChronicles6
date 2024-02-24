@@ -22,6 +22,7 @@ function Character:init(x, y, characterSheet, path, levelScreen)
     self.lastMove = vec2.new(0,0)
     self.moveSpeed = 20
     self.levelScreen = levelScreen
+    self.animTime = 0
 
     self:moveTo(x,y)
     self:setFrame(1)
@@ -57,8 +58,10 @@ function Character:update()
 
     if self.levelScreen.state == Level.STATE_NORMAL then
         if self.characterAnim then
-            if self.deltaTime >= 100 then -- Check if 100 ms have passed
+            self.animTime += self.deltaTime
+            if self.animTime >= 100 then -- Check if 100 ms have passed
                 self.animFrame = (self.animFrame + 1) % 3
+                self.animTime -= 100
             end
 
             self:setFrame(self.dir * 3 + self.animFrame + 1)
@@ -90,7 +93,9 @@ function Character:update()
                     end
                 end
             else
-                self:setFrame(self.dir * 3 + 1)
+                if self.characterAnim then
+                    self:setFrame(self.dir * 3 + 1)
+                end
             end
         end
     end

@@ -44,6 +44,8 @@ function PlayerData:init()
     self.failImage = gfx.image.new("sprites/fail.png")
     self.blockImage = gfx.image.new("sprites/block.png")
 
+    self.bButtonPrompt = gfx.image.new("sprites/prompt_b.png")
+
     self.attackKeys = {
         { keyCode = playdate.kButtonA, image = gfx.image.new("sprites/button_a.png") },
         { keyCode = playdate.kButtonUp, image = gfx.image.new("sprites/button_up.png") },
@@ -63,5 +65,14 @@ function PlayerData:init()
     self.button_retry = gfx.image.new("sprites/retry.png")
     self.button_quit = gfx.image.new("sprites/quit.png")
 
-    self.stamina = 100
+    self.strangleImage = gfx.image.new("sprites/strangle.png")
+
+    self.maxStamina = 100
+    self.stamina = self.maxStamina
+
+    self.font, error = gfx.font.new('fonts/blocky')
+    gfx.setFont(self.font)
+    if error ~= nil then
+        print(error)
+    end
 end

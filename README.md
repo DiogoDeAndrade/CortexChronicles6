@@ -1,4 +1,4 @@
-# THE CORTEX CHRONICLES, CHAPTER 6 - TBD
+# THE CORTEX CHRONICLES, CHAPTER 6 - THE INFILTRATION OF NYX STERLING
 
 ![GameScreenshot](Screenshots/screen01.png)
 
@@ -11,6 +11,10 @@ I also want to use a different engine on every entry, so let's see how that goes
 This time, I'm using the Playdate SDK, which is Lua-based and is one of two ways to build application for the Playdate. Since I don't have a device, I'm doing everything with the simulator.
 
 Since the SDK doesn't have any editor tools, I used Unity to make a sort of level editor. From that level editor (done using some scripts and [OkapiKit] stuff), I can export some files with a custom format (building a tile palette, exporting tilemap and paths, along with enemies) that I can load with Lua code on the other end...
+
+![GameScreenshot](Screenshots/screen02.png)
+
+![GameScreenshot](Screenshots/screen03.png)
 
 ## Game
 

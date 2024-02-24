@@ -83,6 +83,8 @@ end
 -- SINGLETON STUFF
 Screen.stack = { }
 Screen.isTransitioning = false
+Screen.nextScreen = nil
+Screen.transitionTimer = 0
 
 function Screen.run()
     Screen.isTransitioning = false
@@ -114,6 +116,41 @@ function Screen.run()
     Screen.currentScreen:afterRender()
 
     gfx.setDrawOffset(0, 0)
+
+    if Screen.nextScreen ~= nil then
+        Screen.transitionTimer += Screen.currentScreen.deltaTime
+        local t = Screen.transitionTimer / Screen.transitionDuration
+        if (t >= 1) then
+            Screen.currentScreen:setVisible(false)
+            Screen.currentScreen:close()
+
+            Screen.stack = {}
+
+            Screen.currentScreen = Screen.screens[Screen.nextScreen]
+            if Screen.currentScreen == nil then
+                print("Can't find screen ".. Screen.nextScreen)
+            end
+    
+            Screen.currentScreen:start(Screen.nextParam)
+            Screen.currentScreen:setVisible(true)
+    
+            Screen.nextScreen = nil
+        end
+
+        gfx.setDitherPattern(1 - t, gfx.image.kDitherTypeBayer8x8)
+        gfx.fillRect(0, 0, 400, 240)
+        gfx.setColor(gfx.kColorBlack)    
+    else
+        if Screen.transitionTimer > 0 then
+            Screen.transitionTimer -= Screen.currentScreen.deltaTime
+            local t = Screen.transitionTimer / Screen.transitionDuration
+            if t > 0 then
+                gfx.setDitherPattern(1 - t, gfx.image.kDitherTypeBayer8x8)
+                gfx.fillRect(0, 0, 400, 240)
+                gfx.setColor(gfx.kColorBlack)
+            end
+        end
+    end
 end
 
 function Screen.addScreen(name, screen)
@@ -123,21 +160,45 @@ function Screen.addScreen(name, screen)
     Screen.screens[name] = screen
 end
 
-function Screen.gotoScreen(name, param)
-    if Screen.currentScreen ~= nil then
-        Screen.currentScreen:setVisible(false)
-        Screen.currentScreen:close()
+function Screen.gotoScreen(name, param, transitionDuration)
+    if Screen.nextScreen ~= nil then
+        return
     end
+    if transitionDuration == nil then
+        if Screen.currentScreen ~= nil then
+            Screen.currentScreen:setVisible(false)
+            Screen.currentScreen:close()
+        end
 
-    Screen.stack = {}
+        Screen.stack = {}
 
-    Screen.currentScreen = Screen.screens[name]
-    if Screen.currentScreen == nil then
-        print("Can't find screen ".. name)
+        Screen.currentScreen = Screen.screens[name]
+        if Screen.currentScreen == nil then
+            print("Can't find screen ".. name)
+        end
+
+        Screen.currentScreen:start(param)
+        Screen.currentScreen:setVisible(true)
+    else
+        if Screen.currentScreen == nil then
+            Screen.stack = {}
+
+            Screen.currentScreen = Screen.screens[name]
+            if Screen.currentScreen == nil then
+                print("Can't find screen ".. name)
+            end
+
+            Screen.currentScreen:start(param)
+            Screen.currentScreen:setVisible(true)
+            Screen.transitionDuration = transitionDuration
+            Screen.transitionTimer = transitionDuration
+        else
+            Screen.nextScreen = name
+            Screen.nextParam = param
+            Screen.transitionDuration = transitionDuration
+            Screen.transitionTimer = 0
+        end
     end
-
-    Screen.currentScreen:start(param)
-    Screen.currentScreen:setVisible(true)
 end
 
 function Screen.pushScreen(name, param)

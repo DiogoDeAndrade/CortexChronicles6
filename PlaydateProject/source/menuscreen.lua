@@ -10,7 +10,7 @@ local gfx <const> = pd.graphics
 
 class('MenuScreen').extends(Screen)
 
-function MenuScreen:init(backgroundImageName, defaultScene, buttonList)
+function MenuScreen:init(backgroundImageName, defaultScene, buttonList, transitionTime)
     MenuScreen.super.init(self)
 
     self.image = gfx.image.new("sprites/" .. backgroundImageName .. ".png")
@@ -18,25 +18,72 @@ function MenuScreen:init(backgroundImageName, defaultScene, buttonList)
     
     self.buttonList = buttonList
     self.selected = 1
+
+    if transitionTime == nil then
+        self.transitionTime = 1
+    else
+        self.transitionTime = transitionTime
+    end
 end
 
 function MenuScreen:start(currentScreenName)
     MenuScreen.super.start(self)
 
     self.currentScreenName = currentScreenName
+
+    self.inputEnable = false
 end
 
 function MenuScreen:update()
     MenuScreen.super.update(self)
 
-    if defaultScene ~= nil then
-        if playdate.buttonIsPressed(playdate.kButtonB) then
-            Screen.gotoScreen(self.nextScene, nil)
+    if self.inputEnable then
+        if self.defaultScene ~= nil then
+            if playdate.buttonIsPressed(playdate.kButtonB) then
+                if self.callback ~= nil then
+                    self.callback(self.defaultScene)
+                end
+
+                Screen.gotoScreen(self.defaultScene, nil, self.transitionTime)
+            end
+        end
+
+        if self.buttonList ~=nil then
+            if pd.buttonJustPressed(pd.kButtonUp) then
+                self.selected -= 1
+                if (self.selected < 1) then
+                    self.selected = #self.buttonList
+                end
+            end
+            if pd.buttonJustPressed(pd.kButtonDown) then
+                self.selected = (self.selected % #self.buttonList) + 1
+            end
+            if (pd.buttonJustPressed(pd.kButtonA)) or (pd.buttonJustPressed(pd.kButtonB)) then
+                local nextScreen = self.buttonList[self.selected].screen
+
+                if self.callback ~= nil then
+                    self.callback(nextScreen)
+                end
+
+                if nextScreen == "{param}" then
+                    nextScreen = self.currentScreenName
+                end
+    
+                Screen.gotoScreen(nextScreen, self.transitionTime)
+            end
+        end
+    else
+        if not playdate.buttonIsPressed(pd.kButtonA) and 
+           not playdate.buttonIsPressed(pd.kButtonB) and 
+           not playdate.buttonIsPressed(pd.kButtonUp) and 
+           not playdate.buttonIsPressed(pd.kButtonDown) then
+            self.inputEnable = true
         end
     end
 end
 
 function MenuScreen:render()
+    
 end
 
 function MenuScreen:afterRender()
@@ -58,24 +105,6 @@ function MenuScreen:afterRender()
             y += sy + 2
         end
 
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
-
-        if pd.buttonJustPressed(pd.kButtonUp) then
-            self.selected -= 1
-            if (self.selected < 1) then
-                self.selected = #self.buttonList
-            end
-        end
-        if pd.buttonJustPressed(pd.kButtonDown) then
-            self.selected = (self.selected % #self.buttonList) + 1
-        end
-        if (pd.buttonJustPressed(pd.kButtonA)) or (pd.buttonJustPressed(pd.kButtonB)) then
-            local nextScreen = self.buttonList[self.selected].screen
-            if nextScreen == "{param}" then
-                nextScreen = self.currentScreenName
-            end
-
-            Screen.gotoScreen(nextScreen)
-        end
+        gfx.setImageDrawMode(gfx.kDrawModeCopy)        
     end
 end

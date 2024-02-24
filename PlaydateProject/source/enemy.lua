@@ -57,6 +57,8 @@ end
 
 function Enemy:update()
 
+    local prevPos = self.pos
+
     if self.levelScreen.state == Level.STATE_NORMAL then
         if self.state == PATROL then
             self.distance += self.moveSpeed
@@ -77,7 +79,7 @@ function Enemy:update()
             if self:checkPlayerLOS(gForward[self.dir + 1]) then
                 -- Override path, now go towards the path of the player
                 self.state = START_CHASE
-                self.targetPoint, self.targetDistance = player.path:getClosestPoint(self.pos)
+                self.targetPoint, self.targetDistance = self.levelScreen.player.path:getClosestPoint(self.pos)
                 self.path = nil
             end
         elseif self.state == START_CHASE then
@@ -115,13 +117,18 @@ function Enemy:update()
         else
             self:setFrame(13)
         end
+
+        local player = self.levelScreen.player
+        if player ~= nil and player:isDead() then
+            self.pos = prevPos
+        end    
     end
 end
 
 function Enemy:checkPlayerLOS(forward)
     -- Check if player is inside the fov
     local player = self.levelScreen.player
-    if player ~= nil then
+    if player ~= nil and not player:isDead() then
         local playerPos = player.pos
         local headPos = self:getHeadPos()
 
@@ -164,4 +171,27 @@ end
 
 function Enemy:setKey(id)
     self.keyId = id
+end
+
+function Enemy:isBehind(pos)
+    -- Check distance
+    local toPlayer = pos - self.pos
+    local dist = toPlayer:magnitude()
+    if dist > 20 then
+        return false
+    end
+
+    toPlayer:normalize()
+
+    local dir = gForward[self.dir + 1] 
+
+    if dir:dotProduct(toPlayer) < 0 then
+        return true
+    end
+
+    return false
+end
+
+function Enemy:isDead()
+    return self.state == DEAD
 end

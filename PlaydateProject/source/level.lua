@@ -16,6 +16,8 @@ class('Level').extends(Screen)
 
 Level.STATE_NORMAL = 0
 Level.STATE_FIGHT = 1
+Level.STATE_STRANGLE = 2
+
 Level.SUBSTATE_BLOCK = 0
 Level.SUBSTATE_STRIKE = 1
 Level.SUBSTATE_NYXHIT = 2
@@ -23,12 +25,12 @@ Level.SUBSTATE_NYXMISS = 3
 Level.SUBSTATE_NYXFAIL = 4
 Level.SUBSTATE_NYXBLOCK = 5
 Level.SUBSTATE_GUARDHIT = 6
+Level.SUBSTATE_GAMEOVER = 7
 
 function Level:init(baseName)
     Level.super.init(self)
 
     self.baseName = baseName
-    self.state = Level.STATE_NORMAL
 end
 
 function Level:start()
@@ -44,6 +46,10 @@ function Level:start()
     self:addObject(self.player)
 
     Level.super.start(self)
+
+    self.state = Level.STATE_NORMAL
+    self.substate = Level.SUBSTATE_BLOCK
+    self.startStamina = playerData.stamina
 end
 
 function Level:close()
@@ -301,18 +307,13 @@ function Level:update()
             self.attackTime += self.deltaTime
             if self.attackTime > 1 then
                 if (playerData.stamina <= 0) then
-                    Screen.gotoScreen("GameOver", nil)
+                    self:switchToGameOver()
                 elseif self.subState == Level.SUBSTATE_NYXBLOCK then
                     self.subState = Level.SUBSTATE_ATTACK
                 elseif self.subState == Level.SUBSTATE_GUARDHIT then
                     self.subState = Level.SUBSTATE_ATTACK
                     if self.activeEnemy.health <= 0 then
-                        self.state = Level.STATE_NORMAL
-                        self.activeEnemy:kill()
-                        if self.activeEnemy.keyId ~= 0 then
-                            self.player:addKey(self.activeEnemy.keyId)
-                            self.activeEnemy.keyId = 0
-                        end
+                        self:killActiveEnemy()
                     end
                 else
                     self.subState = Level.SUBSTATE_BLOCK
@@ -321,9 +322,45 @@ function Level:update()
             end
         end
     end
+
+    if self.state == Level.STATE_STRANGLE then
+        if self.startTime > 0 then
+            self.startTime -= self.deltaTime
+        else
+            self.strangleTime += self.deltaTime
+            
+            if self.strangleTime >= self.strangleTotalTime then
+                self:switchToFightMode(self.activeEnemy)
+                self.activeEnemy.health = self.activeEnemy:getMaxHealth()
+            else
+                local change, acceleratedChange = pd.getCrankChange()
+
+                self.activeEnemy.health -= math.abs(change) * self.deltaTime / self.activeEnemy.difficulty
+
+                if self.activeEnemy.health <= 0 then
+                    self:killActiveEnemy()
+                    self.player:holdUntilCrankStop()
+                end
+            end
+        end
+    end
+end
+
+function Level:killActiveEnemy()
+    self.state = Level.STATE_NORMAL
+    self.activeEnemy:kill()
+    if self.activeEnemy.keyId ~= 0 then
+        self.player:addKey(self.activeEnemy.keyId)
+        self.activeEnemy.keyId = 0
+    end
 end
 
 function Level:successFight()
+    -- Every attack consume some stamina, if stamina is above 20
+    if playerData.stamina > 20 then
+        playerData.stamina -= 5
+    end
+
     if self.subState == Level.SUBSTATE_ATTACK then
         self.activeEnemy.health -= 5
         self.subState = Level.SUBSTATE_GUARDHIT
@@ -339,7 +376,10 @@ end
 
 function Level:failFight(timeUp)
     if self.subState == Level.SUBSTATE_ATTACK then
-        -- Was attacking, don't lose stamina, but cede the attack
+        -- Was attacking, lose stamina if the stamina is above 10
+        if playerData.stamina > 10 then
+            playerData.stamina -= 10
+        end
         if timeUp then
             self.subState = Level.SUBSTATE_NYXMISS
         else
@@ -423,6 +463,27 @@ function Level:afterRender()
             
         gfx.popContext()
     end
+
+    if self.state == Level.STATE_STRANGLE then
+        gfx.pushContext()
+            gfx.setDrawOffset(0, 0)
+            self:drawWithBorder(60, 40, 280, 160)
+            
+            local t = self.strangleTime / self.strangleTotalTime
+
+            self:drawWithBorder(60, 20, 280, 20)
+            gfx.fillRect(64 + t * 272 * 0.5, 24, (1 - t) * 272, 12)
+
+            self:drawHealth(40, 40, 20, 160, playerData.stamina, 100)
+            self:drawHealth(340, 40, 20, 160, self.activeEnemy.health, self.activeEnemy:getMaxHealth())
+
+            local lim = 5.0 * t
+            local dx = lim * (math.random() * 2 - 1)
+            local dy = lim * (math.random() * 2 - 1)
+            playerData.strangleImage:drawAnchored(200 + dx, 120 + dy, 0.5, 0.5)
+
+        gfx.popContext()
+    end
 end
 
 function Level:drawHealth(x, y, width, height, current, max)
@@ -498,4 +559,44 @@ function Level:isPlayerInShadow()
     end
 
     return false
+end
+
+function Level:isPlayerBehindEnemy()
+    if self.player == nil then
+        return nil
+    end
+
+    local playerPos = self.player.pos    
+    for i, enemy in ipairs(self.enemies) do
+        if not enemy:isDead() and enemy:isBehind(playerPos) then
+            return enemy
+        end
+    end
+
+    return nil
+end
+
+function Level:switchToStrangleMode(enemy)
+    self.state = Level.STATE_STRANGLE
+    self.startTime = 1
+    self.activeEnemy = enemy
+    self.strangleTime = 0
+    self.strangleTotalTime = 2
+end
+
+function Level:switchToGameOver()
+    self.player:kill()
+    
+    Screen.gotoScreen("GameOver", self.baseName, 1)
+
+    Screen.screens["GameOver"].callback = function(nextScreen)
+        if nextScreen == "{param}" then
+            playerData.stamina = self.startStamina
+        else
+            playerData.stamina = playerData.maxStamina
+        end
+        Screen.screens["GameOver"].callback = nil
+    end
+
+    self.subState = Level.SUBSTATE_GAMEOVER
 end

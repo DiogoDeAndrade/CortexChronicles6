@@ -124,7 +124,7 @@ function Turret:update()
 
                     -- Shoot towards the player
                     if self.cooldown <= 0 then
-                        local shot = Shot(self:getHeadPos(), toPlayer * shotSpeed, time, 2)
+                        local shot = Shot(self:getHeadPos(), toPlayer * shotSpeed, time, 2, self.levelScreen)
                         table.insert(self.shots, shot)
                         self.cooldown = 100
                     end
@@ -147,11 +147,8 @@ function Turret:update()
         if shot.timer <= 0 then
             table.remove(self.shots, i)
         else
-            local player = self.levelScreen.player
-            if player ~= nil then
-                if shot.pos:distanceToPoint(player.pos) < 4 then
-                    Screen.gotoScreen("GameOver", Screen.currentScreen.baseName)
-                end
+            if shot:hitPlayer() then
+                self.levelScreen:switchToGameOver()
             end
         end
     end
@@ -170,4 +167,8 @@ function Turret:afterRender()
             shot:render()
         end
     end
+end
+
+function Turret:isBehind(pos)
+    return false
 end
