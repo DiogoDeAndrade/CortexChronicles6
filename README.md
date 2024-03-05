@@ -16,23 +16,35 @@ Since the SDK doesn't have any editor tools, I used Unity to make a sort of leve
 
 ![GameScreenshot](Screenshots/screen02.png)
 
-![GameScreenshot](Screenshots/screen03.png)
-
 This game was a lot more work than I was expecting, but it ended up being quite a cool developmenmt experience.
 
 ## Game
 
 In this game, the player is Nyx Sterling, a cat-burgler turned freedom fighter. She has to infiltrate the facility where Doctor Ignatius Cogwell is developing MoodMorph, a mind altering drug. We have to prevent him from completing his research and deploy it, further increasing the control Prime Nexus' control over society.
 
+![GameScreenshot](Screenshots/screen03.png)
+
 The player can only control Nyx using the crank, to walk forward or back, avoiding being seen by the guards, security cameras, etc.
 
 If Nyx is caught by guards, she'll have to fight the guard using some quick-time events. Player can also sneak behind the guards and press the B key to strangle them using the crank. Strangling guards spends less stamina than the other options of direct confrontation.
 Security turrets shoot at the Nyx if she's seen, which will kill her immediately. Nyx can avoid being spotted by staying the dark spaces of the map.
 
+## Other screenshots 
+
+![GameScreenshot](Screenshots/screen04.png)
+
+![GameScreenshot](Screenshots/screen05.png)
+
+![GameScreenshot](Screenshots/screen06.png)
+
+![GameScreenshot](Screenshots/screen07.png)
+
 ## Art
 
 - Everything done by Diogo de Andrade, licensed through the [CC0] license.
+- Static images generated with Dall-E and processed
 - Sprites created using [LPC character generator] and then adapted for 32x32 and black & white.
+- Music by [klavo1985], licensed through the [CC-BY-SA 4.0] license
 
 ## Licenses
 
@@ -44,10 +56,9 @@ Security turrets shoot at the Nyx if she's seen, which will kill her immediately
 
 [Diogo Andrade]:https://github.com/DiogoDeAndrade
 [CC0]:https://creativecommons.org/publicdomain/zero/1.0/
-[CC-BY-SA 3.0]:http://creativecommons.org/licenses/by-sa/3.0/
-[GLP 2.0]:https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-[GPL 3.0]:https://www.gnu.org/licenses/gpl-3.0.html
+[CC-BY-SA 4.0]:http://creativecommons.org/licenses/by-sa/4.0/
 [MIT]:LICENSE
 [OkapiKit]:https://github.com/VideojogosLusofona/OkapiKit
 [Playdate]:https://https://play.date/
 [LPC character generator]:https://sanderfrenken.github.io/Universal-LPC-Spritesheet-Character-Generator
+[klavo1985]:https://opengameart.org/users/klavo1985

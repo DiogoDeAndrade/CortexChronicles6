@@ -36,6 +36,8 @@ function Enemy:init(name, path, moveSpeed, difficulty, levelScreen)
     self.health = self:getMaxHealth()
 
     self.keyId = 0
+
+    self.accumSteps = 0
 end
 
 function Enemy:getMaxHealth()

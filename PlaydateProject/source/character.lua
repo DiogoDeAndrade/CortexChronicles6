@@ -35,6 +35,9 @@ function Character:init(x, y, characterSheet, path, levelScreen)
         self:moveTo(self.pos)
         self.dir = 1
     end
+
+    self.accumSteps = 0
+    self.stepVolume = 0.05
 end
 
 function Character:getHeadPos()
@@ -103,6 +106,14 @@ function Character:update()
     Character.super.update(self)
 
     self.currentVelocity = (self.pos - currentPos) / (self.deltaTime * 0.001)
+
+    local stepCount = self.pos - currentPos
+    self.accumSteps += stepCount:magnitude()
+
+    if self.accumSteps > 10 then
+        self.accumSteps = 0
+        playerData:playSound("step_enemy", self.stepVolume, math.random() * 0.4 + 0.8)
+    end
 end
 
 function Character:afterRender()

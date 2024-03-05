@@ -31,6 +31,7 @@ function StoryScreen:update()
         if playdate.buttonJustPressed(playdate.kButtonA) or playdate.buttonJustPressed(playdate.kButtonB) then
             if self.storyText ~= nil and self.storyIndex >= #self.storyText then
                 Screen.gotoScreen(self.nextScene, nil, self.transitionTime)
+                playerData:playSound("skip")
             else
                 self:nextText()
             end
@@ -60,6 +61,7 @@ function StoryScreen:nextText()
         local x, y, width, height = string.match(text, "rect:(%d+),%s*(%d+),%s*(%d+),%s*(%d+)")
         self.storyRect = geom.rect.new(tonumber(x), tonumber(y), tonumber(width), tonumber(height))
     else
+        playerData:playSound("skip")
         return
     end
 

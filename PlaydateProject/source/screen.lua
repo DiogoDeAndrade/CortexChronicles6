@@ -164,7 +164,7 @@ end
 
 function Screen.gotoScreen(name, param, transitionDuration)
     if Screen.nextScreen ~= nil then
-        return
+        return false
     end
     if transitionDuration == nil then
         if Screen.currentScreen ~= nil then
@@ -201,6 +201,8 @@ function Screen.gotoScreen(name, param, transitionDuration)
             Screen.transitionTimer = 0
         end
     end
+
+    return true
 end
 
 function Screen.pushScreen(name, param)

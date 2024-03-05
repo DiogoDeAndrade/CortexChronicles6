@@ -1,6 +1,5 @@
 import "CoreLibs/graphics"
 import "level"
-import "fight"
 import "playerdata"
 import "menuscreen"
 import "storyscreen"
@@ -38,23 +37,41 @@ storyEnd = { "...",
 			 "Nyx: You Cortex lovers are all the same!"
 		}
 
+credits = { "Code, story, game design by\nDiogo de Andrade\n\nArt by\nDall-E 3\nOpenGameArt.org LPC art\nDiogo de Andrade\n\nMusic by\nklavo1985" }
+
 --playdate.display.setRefreshRate(0)
 
 playerData = PlayerData()
 
-Screen.addScreen("Logo", MenuScreen("logo", "MainMenu", nil))
-Screen.addScreen("MainMenu", MenuScreen("title", "Story01", nil))
-Screen.addScreen("Story01", StoryScreen("story01", "Level01", storyStart, geom.rect.new(150, 0, 250, 80)))
-Screen.addScreen("Level01", Level("Level01"))
-Screen.addScreen("Level02", Level("Level02"))
-Screen.addScreen("Level03", Level("Level03"))
-Screen.addScreen("Level04", Level("Level04"))
-Screen.addScreen("Fight", Fight())
-Screen.addScreen("GameOver", MenuScreen("gameover", nil, { { image = playerData.button_retry, screen = "{param}" }, { image = playerData.button_quit, screen = "MainMenu" } }))
-Screen.addScreen("End", StoryScreen("story03", "EndEnd", storyEnd, geom.rect.new(150, 0, 250, 40)))
-Screen.addScreen("EndEnd", MenuScreen("end", "MainMenu", nil))
+logoScreen = MenuScreen("logo", "MainMenu", nil, nil, 3)
+menuScreen = MenuScreen("title", nil, { { image = playerData.button_start, screen = "Story01" }, { image = playerData.button_credits, screen = "Credits" } }, nil)
+menuScreen.startDuration = 2
+menuScreen.yMenu = 150
+creditsScreen = StoryScreen("bgcredits", "MainMenu", credits, geom.rect.new(2, 2, 180, 100))
+startStoryScreen = StoryScreen("story01", "Level01", storyStart, geom.rect.new(150, 0, 250, 80))
+level1 = Level("Level01")
+level2 = Level("Level02")
+level3 = Level("Level03")
+level4 = Level("Level04")
+gameOverScreen = MenuScreen("gameover", nil, { { image = playerData.button_retry, screen = "{param}" }, { image = playerData.button_quit, screen = "MainMenu" } }, nil)
+endStoryScreen = StoryScreen("story03", "EndEnd", storyEnd, geom.rect.new(150, 0, 250, 40), nil)
+endScreen = MenuScreen("end", "MainMenu", nil, nil)
+
+Screen.addScreen("Logo", logoScreen)
+Screen.addScreen("MainMenu", menuScreen)
+Screen.addScreen("Credits", creditsScreen)
+Screen.addScreen("Story01", startStoryScreen)
+Screen.addScreen("Level01", level1)
+Screen.addScreen("Level02", level2)
+Screen.addScreen("Level03", level3)
+Screen.addScreen("Level04", level4)
+Screen.addScreen("GameOver", gameOverScreen)
+Screen.addScreen("End", endStoryScreen)
+Screen.addScreen("EndEnd", endScreen)
 
 --Screen.gotoScreen("Level04", nil, 0.5)
+--Screen.gotoScreen("MainMenu")
+--Screen.gotoScreen("Credits")
 Screen.gotoScreen("Logo")
 frame = 1
 

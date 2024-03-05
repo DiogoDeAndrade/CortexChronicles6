@@ -127,6 +127,7 @@ function Turret:update()
                         local shot = Shot(self:getHeadPos(), toPlayer * shotSpeed, time, 2, self.levelScreen)
                         table.insert(self.shots, shot)
                         self.cooldown = 100
+                        playerData:playSound("gun", 0.25, math.random() * 0.2 + 0.9)
                     end
                 end
             end

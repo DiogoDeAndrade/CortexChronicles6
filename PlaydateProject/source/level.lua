@@ -1,4 +1,5 @@
 import "CoreLibs/graphics"
+import "CoreLibs/ui"
 import "screen"
 import "path"
 import "character"
@@ -50,6 +51,8 @@ function Level:start()
     self.state = Level.STATE_NORMAL
     self.substate = Level.SUBSTATE_BLOCK
     self.startStamina = playerData.stamina
+    self.playerIsInShadow = false
+    self.accumStrangle = 0
 end
 
 function Level:close()
@@ -252,6 +255,8 @@ local allSprites
 function Level:update()
     Level.super.update(self)
 
+    self:computePlayerInShadow()
+
     --self:debugCamera()
     self.camera_center = self.player.pos:copy()
 
@@ -308,6 +313,7 @@ function Level:update()
             if self.attackTime > 1 then
                 if (playerData.stamina <= 0) then
                     self:switchToGameOver()
+                    playerData:playSound("death")
                 elseif self.subState == Level.SUBSTATE_NYXBLOCK then
                     self.subState = Level.SUBSTATE_ATTACK
                 elseif self.subState == Level.SUBSTATE_GUARDHIT then
@@ -335,6 +341,14 @@ function Level:update()
             else
                 local change, acceleratedChange = pd.getCrankChange()
 
+                change = change * 0.5
+                
+                self.accumStrangle += change
+                if (self.accumStrangle > 10) then
+                    playerData:playSound("strangle", 0.25)
+                    self.accumStrangle = 0
+                end
+
                 self.activeEnemy.health -= math.abs(change) * self.deltaTime / self.activeEnemy.difficulty
 
                 if self.activeEnemy.health <= 0 then
@@ -353,6 +367,7 @@ function Level:killActiveEnemy()
         self.player:addKey(self.activeEnemy.keyId)
         self.activeEnemy.keyId = 0
     end
+    playerData:playSound("kill")
 end
 
 function Level:successFight()
@@ -366,10 +381,12 @@ function Level:successFight()
         self.subState = Level.SUBSTATE_GUARDHIT
         self.nyxImage = self:getRandomImage(playerData.nyxStrikeImages)
         self.guardImage = self:getRandomImage(playerData.guardHitImages)
+        playerData:playSound("hit")
     else
         self.subState = Level.SUBSTATE_NYXBLOCK
         self.nyxImage = self:getRandomImage(playerData.nyxBlockImages)
         self.guardImage = self:getRandomImage(playerData.guardStrikeImages)
+        playerData:playSound("block")
     end
     self.attackTime = 0
 end
@@ -386,12 +403,14 @@ function Level:failFight(timeUp)
             self.subState = Level.SUBSTATE_NYXFAIL
         end
         self.attackTime = 0
+        playerData:playSound("miss")
     else
         playerData.stamina -= 25
         self.nyxImage = self:getRandomImage(playerData.nyxHitImages)
         self.guardImage = self:getRandomImage(playerData.guardStrikeImages)
         self.subState = Level.SUBSTATE_NYXHIT
         self.attackTime = 0
+        playerData:playSound("miss")
     end
 end
 
@@ -482,6 +501,11 @@ function Level:afterRender()
             local dy = lim * (math.random() * 2 - 1)
             playerData.strangleImage:drawAnchored(200 + dx, 120 + dy, 0.5, 0.5)
 
+            if self.strangleTime < 1.5 then
+                pd.ui.crankIndicator:draw(0, 0)
+                pd.ui.crankIndicator:update()
+            end
+
         gfx.popContext()
     end
 end
@@ -552,13 +576,17 @@ function Level:getClosestDoor(pos)
 end
 
 function Level:isPlayerInShadow()
+    return self.playerIsInShadow
+end
+
+function Level:computePlayerInShadow()
+    self.playerIsInShadow = false
     for i, shadow in ipairs(self.shadows) do
         if shadow:inShadow(self.player.pos) then
-            return true
+            self.playerIsInShadow = true
+            return
         end
     end
-
-    return false
 end
 
 function Level:isPlayerBehindEnemy()

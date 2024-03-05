@@ -26,6 +26,8 @@ function Player:init(path, levelScreen)
     self.holdUntilCrankZero = false
 
     self.state = STATE_NORMAL
+
+    self.stepVolume = 0.1
 end
 
 function Player:update()
@@ -68,7 +70,9 @@ function Player:update()
                             self.distance = newDistance
                             if newDist < closestDoor.radius and closestDoor.isFinalExit then
                                 -- Exit here!
-                                Screen.gotoScreen(closestDoor.nextLevel, nil, 1)
+                                if Screen.gotoScreen(closestDoor.nextLevel, nil, 1) then
+                                    playerData:playSound("door")
+                                end
                             end
                         else
                             -- Check old and new distance to this door
@@ -78,6 +82,7 @@ function Player:update()
                                 if self:hasKey(closestDoor.requiredKey) then
                                     closestDoor.open = true
                                     self:removeKey(closestDoor.requiredKey)
+                                    playerData:playSound("door")
                                 end
                             else
                                 -- Move to new position
@@ -110,6 +115,12 @@ function Player:update()
     end
 
     Player.super.update(self)
+
+    if self.levelScreen:isPlayerInShadow() then
+        self.stepVolume = 0.025
+    else
+        self.stepVolume = 0.1
+    end
 end
 
 function Player:afterRender()
